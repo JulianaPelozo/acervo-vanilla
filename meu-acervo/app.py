@@ -4,14 +4,18 @@ import os
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///acervo.db'
+# Caminho onde o banco será criado. Na pasta 'data' para o Docker sobreviver.
+db_path = os.path.join(os.path.dirname(__file__), 'data', 'acervo.db')
+os.makedirs(os.path.dirname(db_path), exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# Nossa tabela de itens
 class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(200), nullable=False)
-    tipo = db.Column(db.String(50))
+    tipo = db.Column(db.String(50))   # livro, cd, dvd...
 
 @app.route('/')
 def home():
@@ -29,5 +33,5 @@ def adicionar():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()   # Cria o arquivo acervo.db e a tabela automaticamente!
-    app.run(host='0.0.0.0', port=5000)
+        db.create_all()   # Cria o arquivo e tabela se não existir
+    app.run(host='0.0.0.0', port=5000, debug=True)
